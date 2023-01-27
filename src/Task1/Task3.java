@@ -11,15 +11,37 @@ public class Task3 {
         System.out.println("Введите текст: ");
         String articles = in.nextLine();
         in.close();
-        String[] words1 = articles.split(" ");
-//        for (String str : words1) ;
-//        System.out.print(words1);
+        //ввели данные в консоль, ввели заголовок ниже
+        System.out.println("ТОП 10 слов в тексте: ");
+        //создаем списочек
         List<String> wordSentanceList = new ArrayList<>();
-        wordSentanceList.addAll(List.of(words1));
-        System.out.println(wordSentanceList.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream().distinct()
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet()));
+        //добавляем в список введенный текст
+        wordSentanceList.add(articles);
+        //переходим к потоку, оставляем только буквы(русские и англ),
+        // все символы заменяем на пробелы (все еще текст у нас)
+        Arrays.stream(articles.replaceAll("[^A-Za-zА-Яа-я]", " ")
+                        //делим текст на слова по пробелу. получаем массив слов отдельных
+                .split(" "))
+                //оставляем только слова, чтобы пробелы не считались за отдельные слова
+                .filter(word -> word.length() > 0)
+                //собираем в Map<String,Integer>
+                .collect(Collectors.toMap(key -> key, value -> 1, Integer::sum))
+                //подсчитываем слова
+                .entrySet().stream()
+                //сортируем слова в порядке убывания, чтобы оставить слова потом с наибольшим повторением
+                .sorted((e1, e2) -> {
+                    //сортируем в порядке убывания повторения
+                    int value = e1.getValue().compareTo(e2.getValue())* -1;
+                    if (value == 0) {
+                        //внутри сортированного списка по повторениям, при одинаковом значении ставим в алфавитном порядке
+                        value = e1.getKey().compareTo(e2.getKey());
+                        //возвращаем значения
+                    } return value;
+                })
+                //ставим, что нужно только первые 10 слов
+                .limit(10)
+                //выводим
+                .forEach(e -> System.out.println(e.getValue() + ": " + e.getKey()));
 
     }
 }
